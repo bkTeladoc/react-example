@@ -14,7 +14,7 @@ const Dashboard = () => {
                 Name:
             </div>
             <div className="col-md-6">
-                First Last
+                Bogdan Klekot
             </div>
         </div>
         <div className="row">
@@ -30,7 +30,7 @@ const Dashboard = () => {
                 Occupation:
             </div>
             <div className="col-md-6">
-                blah blah blah
+                Azure DevOps Architect
             </div>
         </div>
         </Jumbotron>
