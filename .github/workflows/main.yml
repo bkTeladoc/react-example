@@ -50,7 +50,9 @@ jobs:
         uses: azure/CLI@v1
         with:
           inlineScript: |
+            az storage blob delete-batch --account-name bkstaticweb02 -s '$web'
             az storage blob upload-batch --account-name bkstaticweb02 --auth-mode key -d '$web' -s ./build
+            
     # - name: Purge CDN endpoint
     #  uses: azure/CLI@v1
     #  with:
