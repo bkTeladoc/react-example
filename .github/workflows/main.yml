@@ -1,0 +1,66 @@
+name: Azure Storage Accounr (Static Web) CI/CD
+
+on:
+  push:
+    branches:
+      - storage_deployment
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - storage_deployment
+
+jobs:
+  build: 
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Install NPM packages
+      run: npm ci
+    
+    - name: Build project
+      run: npm run build
+    
+    # - name: Run tests
+    #  run: npm run test
+    
+    - name: Upload production-ready build files
+      uses: actions/upload-artifact@v2
+      with:
+        name: production-files
+        path: ./build
+    
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/storage_deployment'
+    
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: production-files
+          path: ./build
+    
+      - uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Upload to blob storage
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az storage blob delete-batch --account-name bkstaticweb02 -s '$web'
+            az storage blob upload-batch --account-name bkstaticweb02 --auth-mode key -d '$web' -s ./build
+            
+    # - name: Purge CDN endpoint
+    #  uses: azure/CLI@v1
+    #  with:
+    #    inlineScript: |
+    #       az cdn endpoint purge --content-paths  "/*" --profile-name "CDN_PROFILE_NAME" --name "CDN_ENDPOINT" --resource-group "RESOURCE_GROUP"
+
+  # Azure logout
+      - name: logout
+        run: |
+            az logout
+        if: always()
